@@ -59,21 +59,27 @@ func handleConnection(conn net.Conn) {
 }
 
 func processCommand(command string) string {
-	parts := strings.Fields(strings.TrimSpace(command))
-	if len(parts) < 1 {
-		return unknownCmdMsg
-	}
+    parts := strings.Fields(strings.TrimSpace(command))
+    if len(parts) < 1 {
+        return unknownCmdMsg
+    }
 
-	cmd := strings.ToUpper(parts[0])
-	switch cmd {
-	case "PING":
-		return pongResponse
-	case "ECHO":
-		if len(parts) > 1 {
-			return fmt.Sprintf("$%d\r\n%s\r\n", len(parts[1]), parts[1])
-		}
-		return "$-1\r\n"
-	default:
-		return unknownCmdMsg
-	}
+    cmd := strings.ToUpper(parts[0])
+    switch cmd {
+    case "PING":
+        return pongResponse
+    case "ECHO":
+        if len(parts) > 1 {
+            // Compute the length of the response in bytes
+            // message := parts[1]
+			message := strings.Join(parts[1:], " ")
+            // length := len(message)  // Make sure to measure length in bytes for multi-byte characters
+            // return fmt.Sprintf("$%d\r\n%s\r\n", length, message)
+			return fmt.Sprintf("$%d\r\n%s\r\n", len(message), message)
+        }
+        // Handle the case where no message is provided with ECHO
+        return "$-1\r\n"
+    default:
+        return unknownCmdMsg
+    }
 }
