@@ -1,85 +1,186 @@
+// package main
+  
+// import (
+// 	"fmt"
+// 	"net"
+// 	"os"
+// )
+
+// func main() {
+// 	l, err := net.Listen("tcp", "0.0.0.0:6379")
+// 	if err != nil {
+// 		fmt.Println("Failed to bind to port 6379")
+// 		os.Exit(1)
+// 	}
+// 	defer l.Close()
+
+// 	errChan := make(chan error, 0)
+// 	for {
+// 		go func() {
+// 			conn, err := l.Accept()
+// 			if err != nil {
+// 				fmt.Println("Error accepting connection: ", err.Error())
+// 				errChan <- err
+// 			}
+// 			defer conn.Close()
+
+// 			fmt.Println("Connection established")
+// 			for {
+// 				err := handleConnection(conn)
+// 				if err != nil {
+// 					fmt.Println("Error handling connection: ", err.Error())
+// 					errChan <- err
+// 				}
+// 			}
+// 		}()
+// 		select {
+// 		case err := <-errChan:
+// 			fmt.Println("Error: ", err.Error())
+// 		default:
+// 		}
+// 	}
+// }
+  
+// func handleConnection(conn net.Conn) error {
+// 	bufIn := make([]byte, 1024)
+// 	reqLen, err := conn.Read(bufIn)
+// 	if err != nil {
+// 		fmt.Println("Error reading:", err.Error())
+// 		return err
+// 	}
+
+// 	resp, err := NewRESP(bufIn[:reqLen])
+// 	if err != nil {
+// 		fmt.Println("Error parsing:", err.Error())
+// 		return err
+// 	}
+// 	fmt.Println("Received: ", resp.Command, " ", resp.Input)
+
+// 	switch resp.Command {
+// 	case "PING":
+// 		err = handlePing(conn)
+// 		if err != nil {
+// 			fmt.Println("Error handling PING:", err.Error())
+// 			return err
+// 		}
+// 	case "ECHO":
+// 		err = handleEcho(conn, resp.Input)
+// 		if err != nil {
+// 			fmt.Println("Error handling ECHO:", err.Error())
+// 			return err
+// 		}
+// 	default:
+// 		fmt.Println("Unknown command: ", resp.Command)
+// 	}
+
+// 	return nil
+// }
+
+// func handleEcho(conn net.Conn, input string) error {
+// 	_, err := conn.Write([]byte("+" + input + "\r\n"))
+// 	if err != nil {
+// 		fmt.Println("Error writing:", err.Error())
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+// func handlePing(conn net.Conn) error {
+// 	_, err := conn.Write([]byte("+PONG\r\n"))
+// 	if err != nil {
+// 		fmt.Println("Error writing:", err.Error())
+// 		return err
+// 	}
+// 	return nil
+// }
+
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"net"
-	"os"
-	"strings"
-)
-
-const (
-	pongResponse  = "+PONG\r\n"
-	unknownCmdMsg = "-ERR unknown command\r\n"
+    "fmt"
+    "net"
+    "os"
 )
 
 func main() {
-	fmt.Println("Server is starting...")
-
-	listener, err := net.Listen("tcp", "0.0.0.0:6379")
-	if err != nil {
-		fmt.Printf("Failed to bind to port 6379: %s\n", err)
-		os.Exit(1)
-	}
-	defer listener.Close()
-
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			fmt.Printf("Error accepting connection: %s\n", err)
-			continue
-		}
-		go handleConnection(conn)
-	}
-}
-
-func handleConnection(conn net.Conn) {
-	defer conn.Close()
-	reader := bufio.NewReader(conn)
-
-	for {
-		command, err := reader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			fmt.Printf("Read error: %s\n", err)
-			continue
-		}
-		response := processCommand(command)
-		if response != "" {
-			_, err := conn.Write([]byte(response))
-			if err != nil {
-				fmt.Printf("Write error: %s\n", err)
-				return
-			}
-		}
-	}
-}
-
-func processCommand(command string) string {
-    parts := strings.Fields(strings.TrimSpace(command))
-    if len(parts) < 1 {
-        return unknownCmdMsg
+    l, err := net.Listen("tcp", "0.0.0.0:6379")
+    if err != nil {
+        fmt.Println("Failed to bind to port 6379")
+        os.Exit(1)
     }
+    defer l.Close()
 
-    cmd := strings.ToUpper(parts[0])
-    switch cmd {
-    case "PING":
-        return pongResponse
-    case "ECHO":
-        if len(parts) > 1 {
-            // Compute the length of the response in bytes
-            // message := parts[1]
-			message := strings.Join(parts[1:], " ")
-            // length := len(message)  // Make sure to measure length in bytes for multi-byte characters
-            // return fmt.Sprintf("$%d\r\n%s\r\n", length, message)
-			return fmt.Sprintf("$%d\r\n%s\r\n", len(message), message)
+    for {
+        conn, err := l.Accept()
+        if err != nil {
+            fmt.Println("Error accepting connection: ", err.Error())
+            continue
         }
-        // Handle the case where no message is provided with ECHO
-        return "$-1\r\n"
-    default:
-        return unknownCmdMsg
+
+        go func(conn net.Conn) {
+            defer conn.Close()  // Ensure connection is closed when the goroutine finishes
+
+            fmt.Println("Connection established")
+            for {
+                if err := handleConnection(conn); err != nil {
+                    fmt.Println("Error handling connection: ", err.Error())
+                    return  // Exit the goroutine when an error occurs
+                }
+            }
+        }(conn)
     }
+}
+
+func handleConnection(conn net.Conn) error {
+    bufIn := make([]byte, 1024)
+    reqLen, err := conn.Read(bufIn)
+    if err != nil {
+        fmt.Println("Error reading:", err.Error())
+        return err
+    }
+
+    resp, err := NewRESP(bufIn[:reqLen])
+    if err != nil {
+        fmt.Println("Error parsing:", err.Error())
+        return err
+    }
+    fmt.Println("Received: ", resp.Command, " ", resp.Input)
+
+    switch resp.Command {
+    case "PING":
+        err = handlePing(conn)
+        if err != nil {
+            fmt.Println("Error handling PING:", err.Error())
+            return err
+        }
+    case "ECHO":
+        err = handleEcho(conn, resp.Input)
+        if err != nil {
+            fmt.Println("Error handling ECHO:", err.Error())
+            return err
+        }
+    default:
+        fmt.Println("Unknown command: ", resp.Command)
+    }
+
+    return nil
+}
+
+func handleEcho(conn net.Conn, input string) error {
+    _, err := conn.Write([]byte("+" + input + "\r\n"))
+    if err != nil {
+        fmt.Println("Error writing:", err.Error())
+        return err
+    }
+    return nil
+}
+
+func handlePing(conn net.Conn) error {
+    _, err := conn.Write([]byte("+PONG\r\n"))
+    if err != nil {
+        fmt.Println("Error writing:", err.Error())
+        return err
+    }
+    return nil
 }
