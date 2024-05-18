@@ -1,12 +1,16 @@
-package main
+package handlers
 
-// import "net"
+import (
+	"fmt"
+	"net"
+)
 
-// func handlePing(conn net.Conn) error {
-// 	_, err := conn.Write([]byte("+PONG\r\n"))
-// 	if err != nil {
-// 		fmt.Println("Error writing:", err.Error())
-// 		return err
-// 	}
-// 	return nil
-// }
+
+func HandlePing(conn net.Conn) error {
+	_, err := conn.Write([]byte("+PONG\r\n"))
+	if err != nil {
+		fmt.Println("Error writing:", err.Error())
+		return err
+	}
+	return nil
+}

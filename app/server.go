@@ -101,6 +101,8 @@ import (
     "fmt"
     "net"
     "os"
+
+	"github.com/codecrafters-io/redis-starter-go/app/handlers"
 )
 
 func main() {
@@ -149,13 +151,13 @@ func handleConnection(conn net.Conn) error {
 
     switch resp.Command {
     case "PING":
-        err = handlePing(conn)
+        err = handlers.HandlePing(conn)
         if err != nil {
             fmt.Println("Error handling PING:", err.Error())
             return err
         }
     case "ECHO":
-        err = handleEcho(conn, resp.Input)
+        err = handlers.HandleEcho(conn, resp.Input)
         if err != nil {
             fmt.Println("Error handling ECHO:", err.Error())
             return err
@@ -167,20 +169,20 @@ func handleConnection(conn net.Conn) error {
     return nil
 }
 
-func handleEcho(conn net.Conn, input string) error {
-    _, err := conn.Write([]byte("+" + input + "\r\n"))
-    if err != nil {
-        fmt.Println("Error writing:", err.Error())
-        return err
-    }
-    return nil
-}
+// func handleEcho(conn net.Conn, input string) error {
+//     _, err := conn.Write([]byte("+" + input + "\r\n"))
+//     if err != nil {
+//         fmt.Println("Error writing:", err.Error())
+//         return err
+//     }
+//     return nil
+// }
 
-func handlePing(conn net.Conn) error {
-    _, err := conn.Write([]byte("+PONG\r\n"))
-    if err != nil {
-        fmt.Println("Error writing:", err.Error())
-        return err
-    }
-    return nil
-}
+// func handlePing(conn net.Conn) error {
+//     _, err := conn.Write([]byte("+PONG\r\n"))
+//     if err != nil {
+//         fmt.Println("Error writing:", err.Error())
+//         return err
+//     }
+//     return nil
+// }
