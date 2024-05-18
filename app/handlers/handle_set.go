@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"github.com/codecrafters-io/redis-starter-go/app/protocol"
+	"github.com/codecrafters-io/redis-starter-go/app/kvstore"
 )
 
-
-func HandlePing(args []string) *protocol.RESPType {
+func HandleSet(kv *kvstore.KVStore, args []string) *protocol.RESPType {
+	kv.Set(args[0], args[1])
 	data := make([]string, 0)
-	data = append(data, "PONG")
+	data = append(data, "OK")
 	return &protocol.RESPType{DataType: protocol.SimpleString, Data: data}
 }
