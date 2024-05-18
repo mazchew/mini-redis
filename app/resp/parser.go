@@ -21,7 +21,7 @@ func NewParser(conn net.Conn) *Parser {
 func (p *Parser) ParseCommand() (*Command, error) {
 	dataType, _ := p.r.ReadByte()
 	if dataType != byte(protocol.Array) {
-		return nil, fmt.Errorf("INVALID COMMAND")
+		return nil, fmt.Errorf("Invalid Command")
 	}
 
 	p.r.UnreadByte()
@@ -39,7 +39,7 @@ func (p *Parser) ParseCommand() (*Command, error) {
 func (p *Parser) parseArray() ([]string, error) {
 	dataType, _ := p.r.ReadByte()
 	if dataType != byte(protocol.Array) {
-		return nil, fmt.Errorf("INVALID ARRAY")
+		return nil, fmt.Errorf("Invalid Array")
 	}
 
 	chunk := p.readChunk()
@@ -49,7 +49,7 @@ func (p *Parser) parseArray() ([]string, error) {
 	for i := 0; i < size; i++ {
 		arg, err := p.parseBulkString()
 		if err != nil {
-			return nil, fmt.Errorf("INVALID BULK STRING")
+			return nil, fmt.Errorf("Invalid Bulk String")
 		}
 		args = append(args, arg)
 	}
