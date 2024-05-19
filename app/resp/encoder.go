@@ -23,7 +23,7 @@ func (e *Encoder) Encode(respType *protocol.RESPType) string {
 	case protocol.BulkString:
 		data, ok := respType.Data[0].(string)
 		if !ok {
-            return ""
+            return "$-1\r\n"  // Fallback to null bulk string if type assertion fails or data is nil
         }
         return fmt.Sprintf("$%d\r\n%s\r\n", len(data), data)
 	default:
