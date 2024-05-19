@@ -18,7 +18,6 @@ func NewEncoder(conn net.Conn) *Encoder {
 }
 
 func (e *Encoder) Encode(respType *protocol.RESPType) string {
-	fmt.Println("===== here: ", respType)
 	switch respType.DataType {
 	case protocol.SimpleString:
 		return fmt.Sprintf("+%s\r\n", respType.Data[0].(string))

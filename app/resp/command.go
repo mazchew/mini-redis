@@ -1,8 +1,6 @@
 package resp
 
 import (
-	"fmt"
-	
 	"github.com/codecrafters-io/redis-starter-go/app/protocol"
 	"github.com/codecrafters-io/redis-starter-go/app/handlers"
 	"github.com/codecrafters-io/redis-starter-go/app/kvstore"
@@ -28,8 +26,6 @@ func ExecuteCommand(kv *kvstore.KVStore, cfg *config.Config, command *Command) *
 	if command == nil {
 		return nil
 	}
-
-	fmt.Println("==== command: ", command)
 
 	switch command.Name {
 	case PING:

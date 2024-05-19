@@ -1,15 +1,11 @@
 package handlers
 
 import (
-	"fmt"
-	
 	"github.com/codecrafters-io/redis-starter-go/app/config"
 	"github.com/codecrafters-io/redis-starter-go/app/protocol"
 )
 
 func HandleConfigGet(cfg *config.Config, args []string) *protocol.RESPType {
-	
-	fmt.Println("==== args: ", args)
 	param := args[0]
 	
 	var value string

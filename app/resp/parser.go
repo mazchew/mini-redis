@@ -18,24 +18,6 @@ func NewParser(conn net.Conn) *Parser {
 	return &Parser{r: bufio.NewReader(conn)}
 }
 
-// func (p *Parser) ParseCommand() (*Command, error) {
-// 	dataType, _ := p.r.ReadByte()
-// 	if dataType != byte(protocol.Array) {
-// 		return nil, fmt.Errorf("Invalid Command")
-// 	}
-
-// 	p.r.UnreadByte()
-// 	args, err := p.parseArray()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	commandName := CommandName(strings.ToUpper(args[0]))
-// 	command := &Command{Name: commandName, Args: args[1:]}
-
-// 	return command, nil
-// }
-
 func (p *Parser) ParseCommand() (*Command, error) {
     dataType, err := p.r.ReadByte()
     if err != nil {
@@ -68,11 +50,6 @@ func (p *Parser) ParseCommand() (*Command, error) {
 		command := &Command{Name: commandName, Args: args[1:]}
 		return command, nil
 	}
-
-    // commandName := CommandName(strings.ToUpper(args[0]))
-    // command := &Command{Name: commandName, Args: args[1:]}
-
-    // return command, nil
 }
 
 func (p *Parser) parseArray() ([]string, error) {
