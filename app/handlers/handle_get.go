@@ -9,7 +9,7 @@ func HandleGet(kv *kvstore.KVStore, args []string) *protocol.RESPType {
 	data := make([]interface{}, 0)
 	val, err := kv.Get(args[0])
 	if err != nil {
-		data = append(data, "-1")
+		return &protocol.RESPType{DataType: protocol.BulkString, Data: []interface{}{"-1"}}
 	} else {
 		data = append(data, val.Val)
 	}
