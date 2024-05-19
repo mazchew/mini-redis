@@ -19,9 +19,13 @@ func NewEncoder(conn net.Conn) *Encoder {
 func (e *Encoder) Encode(respType *protocol.RESPType) string {
 	switch respType.DataType {
 	case protocol.SimpleString:
-		return fmt.Sprintf("+%s\r\n", respType.Data[0])
+		return fmt.Sprintf("+%s\r\n", respType.Data[0].(string))
 	case protocol.BulkString:
-		return fmt.Sprintf("$%d\r\n%s\r\n", len(respType.Data[0]), respType.Data[0])
+		data, ok := respType.Data[0].(string)
+		if !ok {
+            return ""
+        }
+        return fmt.Sprintf("$%d\r\n%s\r\n", len(data), data)
 	default:
 		return ""
 	}

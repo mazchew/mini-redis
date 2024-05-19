@@ -5,7 +5,9 @@ import (
 )
 
 func HandleEcho(args []string) *protocol.RESPType {
-	data := make([]string, 0)
-	data = append(data, args[0])
-	return &protocol.RESPType{DataType: protocol.BulkString, Data: data}
+	data := make([]interface{}, len(args))
+	for i, arg := range args {
+		data[i] = arg
+	}
+	return &protocol.RESPType{DataType: protocol.Array, Data: data}
 }

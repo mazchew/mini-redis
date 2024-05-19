@@ -6,12 +6,12 @@ import (
 )
 
 func HandleGet(kv *kvstore.KVStore, args []string) *protocol.RESPType {
-	data := make([]string, 0)
+	data := make([]interface{}, 0)
 	val, err := kv.Get(args[0])
 	if err != nil {
 		data = append(data, "-1")
 	} else {
-		data = append(data, val)
+		data = append(data, val.Val)
 	}
 
 	return &protocol.RESPType{DataType: protocol.BulkString, Data: data}

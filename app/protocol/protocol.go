@@ -10,5 +10,5 @@ const (
 
 type RESPType struct {
 	DataType DataType
-	Data     []string
+	Data     []interface{}
 }
