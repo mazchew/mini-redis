@@ -7,7 +7,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"flag"
 	
+	"github.com/codecrafters-io/redis-starter-go/app/config"
 	"github.com/codecrafters-io/redis-starter-go/app/resp"
 	"github.com/codecrafters-io/redis-starter-go/app/kvstore"
 )
@@ -15,11 +17,13 @@ import (
 type Server struct {
 	kvStore *kvstore.KVStore
 	listener net.Listener
+	config *config.Config
 }
 
-func NewServer() *Server {
+func NewServer(cfg *config.Config) *Server {
 	return &Server{
 		kvStore: kvstore.NewKVStore(),
+		config: cfg,
 	}
 }
 
@@ -32,7 +36,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	for {
 		command, _ := parser.ParseCommand()
 		if command != nil {
-			output := resp.ExecuteCommand(s.kvStore, command)
+			output := resp.ExecuteCommand(s.kvStore, s.config, command)
 			err := encoder.Write(output)
 			if err != nil {
 				fmt.Println("Error writing to client")
@@ -79,7 +83,13 @@ func (s *Server) Stop() {
 }
 
 func main() {
-	server := NewServer()
+	dir := flag.String("dir", "/tmp/redis-files", "directory to store RDB files")
+	dbFilename := flag.String("dbfilename", "dump.rdb", "filename for the RDB file")
+	flag.Parse()
+	
+	cfg := config.NewConfig(*dir, *dbFilename)
+
+	server := NewServer(cfg)
 
 	if err := server.Start(); err != nil {
 		log.Fatalf("Server failed to start: %v", err)

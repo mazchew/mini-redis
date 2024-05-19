@@ -18,22 +18,61 @@ func NewParser(conn net.Conn) *Parser {
 	return &Parser{r: bufio.NewReader(conn)}
 }
 
+// func (p *Parser) ParseCommand() (*Command, error) {
+// 	dataType, _ := p.r.ReadByte()
+// 	if dataType != byte(protocol.Array) {
+// 		return nil, fmt.Errorf("Invalid Command")
+// 	}
+
+// 	p.r.UnreadByte()
+// 	args, err := p.parseArray()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	commandName := CommandName(strings.ToUpper(args[0]))
+// 	command := &Command{Name: commandName, Args: args[1:]}
+
+// 	return command, nil
+// }
+
 func (p *Parser) ParseCommand() (*Command, error) {
-	dataType, _ := p.r.ReadByte()
-	if dataType != byte(protocol.Array) {
-		return nil, fmt.Errorf("Invalid Command")
+    dataType, err := p.r.ReadByte()
+    if err != nil {
+        return nil, fmt.Errorf("failed to read data type byte: %v", err)
+    }
+    if dataType != byte(protocol.Array) {
+        return nil, fmt.Errorf("invalid command format: expected array but got %c", dataType)
+    }
+
+    // Re-insert the byte read for consistent parsing in `parseArray`
+    if err := p.r.UnreadByte(); err != nil {
+        return nil, fmt.Errorf("failed to unread byte: %v", err)
+    }
+
+    args, err := p.parseArray()
+    if err != nil {
+        return nil, fmt.Errorf("failed to parse array: %v", err)
+    }
+
+    if len(args) == 0 {
+        return nil, fmt.Errorf("command array is empty")
+    }
+
+	if (args[0] == "CONFIG") {
+		commandName := CommandName(strings.ToUpper(args[0] + " " + args[1]))
+		command := &Command{Name: commandName, Args: args[2:]}
+		return command, nil
+	} else {
+		commandName := CommandName(strings.ToUpper(args[0]))
+		command := &Command{Name: commandName, Args: args[1:]}
+		return command, nil
 	}
 
-	p.r.UnreadByte()
-	args, err := p.parseArray()
-	if err != nil {
-		return nil, err
-	}
+    // commandName := CommandName(strings.ToUpper(args[0]))
+    // command := &Command{Name: commandName, Args: args[1:]}
 
-	commandName := CommandName(strings.ToUpper(args[0]))
-	command := &Command{Name: commandName, Args: args[1:]}
-
-	return command, nil
+    // return command, nil
 }
 
 func (p *Parser) parseArray() ([]string, error) {
@@ -49,7 +88,7 @@ func (p *Parser) parseArray() ([]string, error) {
 	for i := 0; i < size; i++ {
 		arg, err := p.parseBulkString()
 		if err != nil {
-			return nil, fmt.Errorf("Invalid Bulk String")
+			return nil, fmt.Errorf("INVALID BULK STRING")
 		}
 		args = append(args, arg)
 	}
