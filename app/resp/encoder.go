@@ -25,9 +25,9 @@ func (e *Encoder) Encode(respType *protocol.RESPType) string {
 		if !ok {
             return "$-1\r\n"  // Fallback to null bulk string if type assertion fails or data is nil
         }
-		if (data == "-1") {
-			return "$-1\r\n"
-		}
+		// if (data == "-1") {
+		// 	return "$-1\r\n"
+		// }
         return fmt.Sprintf("$%d\r\n%s\r\n", len(data), data)
 	default:
 		return ""

@@ -9,5 +9,5 @@ func HandleEcho(args []string) *protocol.RESPType {
 	for i, arg := range args {
 		data[i] = arg
 	}
-	return &protocol.RESPType{DataType: protocol.Array, Data: data}
+	return &protocol.RESPType{DataType: protocol.BulkString, Data: data}
 }
