@@ -70,11 +70,19 @@ func parseKeyValueInner(fileData []byte, currIdx int) keyValue {
 }
 
 func getKeysLen(fileData []byte) int {
-	return int(fileData[getOpCodeIdx(fileData, protocol.OpCodeResizeDB)+1])
+	idx := getOpCodeIdx(fileData, protocol.OpCodeResizeDB)
+	if idx == -1 || idx+1 >= len(fileData) {
+		return 0
+	}
+	return int(fileData[idx+1])
 }
 
 func getPairsStartIdx(fileData []byte) int {
-	return getOpCodeIdx(fileData, protocol.OpCodeResizeDB) + 3
+	idx := getOpCodeIdx(fileData, protocol.OpCodeResizeDB)
+	if idx == -1 || idx+3 >= len(fileData) {
+		return len(fileData) // Return end of data if not enough length
+	}
+	return idx + 3
 }
 
 func getOpCodeIdx(fileData []byte, opCode byte) int {
