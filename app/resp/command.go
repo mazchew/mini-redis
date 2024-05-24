@@ -1,20 +1,21 @@
 package resp
 
 import (
-	"github.com/codecrafters-io/redis-starter-go/app/protocol"
+	"github.com/codecrafters-io/redis-starter-go/app/config"
 	"github.com/codecrafters-io/redis-starter-go/app/handlers"
 	"github.com/codecrafters-io/redis-starter-go/app/kvstore"
-	"github.com/codecrafters-io/redis-starter-go/app/config"
+	"github.com/codecrafters-io/redis-starter-go/app/protocol"
 )
 
 type CommandName string
 
 const (
-	ECHO CommandName = "ECHO"
-	PING CommandName = "PING"
-	SET  CommandName = "SET"
-	GET  CommandName = "GET"
+	ECHO       CommandName = "ECHO"
+	PING       CommandName = "PING"
+	SET        CommandName = "SET"
+	GET        CommandName = "GET"
 	CONFIG_GET CommandName = "CONFIG GET"
+	KEYS       CommandName = "KEYS"
 )
 
 type Command struct {
@@ -38,6 +39,8 @@ func ExecuteCommand(kv *kvstore.KVStore, cfg *config.Config, command *Command) *
 		return handlers.HandleGet(kv, command.Args)
 	case CONFIG_GET:
 		return handlers.HandleConfigGet(cfg, command.Args)
+	case KEYS:
+		return handlers.HandleKeys(cfg, command.Args)
 	}
 	return nil
 }

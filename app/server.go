@@ -1,29 +1,29 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"flag"
-	
+
 	"github.com/codecrafters-io/redis-starter-go/app/config"
-	"github.com/codecrafters-io/redis-starter-go/app/resp"
 	"github.com/codecrafters-io/redis-starter-go/app/kvstore"
+	"github.com/codecrafters-io/redis-starter-go/app/resp"
 )
 
 type Server struct {
-	kvStore *kvstore.KVStore
+	kvStore  *kvstore.KVStore
 	listener net.Listener
-	config *config.Config
+	config   *config.Config
 }
 
 func NewServer(cfg *config.Config) *Server {
 	return &Server{
 		kvStore: kvstore.NewKVStore(),
-		config: cfg,
+		config:  cfg,
 	}
 }
 
@@ -75,7 +75,6 @@ func (s *Server) acceptConnections() {
 	}
 }
 
-
 func (s *Server) Stop() {
 	if s.listener != nil {
 		s.listener.Close()
@@ -83,10 +82,10 @@ func (s *Server) Stop() {
 }
 
 func main() {
-	dir := flag.String("dir", "/tmp/redis-files", "directory to store RDB files")
+	dir := flag.String("dir", "/Users/maz/Desktop/Code/tmp/redis-files", "directory to store RDB files")
 	dbFilename := flag.String("dbfilename", "dump.rdb", "filename for the RDB file")
 	flag.Parse()
-	
+
 	cfg := config.NewConfig(*dir, *dbFilename)
 
 	server := NewServer(cfg)

@@ -7,7 +7,7 @@ import (
 
 func HandleConfigGet(cfg *config.Config, args []string) *protocol.RESPType {
 	param := args[0]
-	
+
 	var value string
 	switch param {
 	case "dir":

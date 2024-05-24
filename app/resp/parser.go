@@ -19,30 +19,30 @@ func NewParser(conn net.Conn) *Parser {
 }
 
 func (p *Parser) ParseCommand() (*Command, error) {
-    dataType, err := p.r.ReadByte()
-    if err != nil {
-        return nil, fmt.Errorf("failed to read data type byte: %v", err)
-    }
-    if dataType != byte(protocol.Array) {
-        return nil, fmt.Errorf("invalid command format: expected array but got %c", dataType)
-    }
+	dataType, err := p.r.ReadByte()
+	if err != nil {
+		return nil, fmt.Errorf("failed to read data type byte: %v", err)
+	}
+	if dataType != byte(protocol.Array) {
+		return nil, fmt.Errorf("invalid command format: expected array but got %c", dataType)
+	}
 
-    // Re-insert the byte read for consistent parsing in `parseArray`
-    if err := p.r.UnreadByte(); err != nil {
-        return nil, fmt.Errorf("failed to unread byte: %v", err)
-    }
+	// Re-insert the byte read for consistent parsing in `parseArray`
+	if err := p.r.UnreadByte(); err != nil {
+		return nil, fmt.Errorf("failed to unread byte: %v", err)
+	}
 
-    args, err := p.parseArray()
-    if err != nil {
-        return nil, fmt.Errorf("failed to parse array: %v", err)
-    }
+	args, err := p.parseArray()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse array: %v", err)
+	}
 
-    if len(args) == 0 {
-        return nil, fmt.Errorf("command array is empty")
-    }
+	if len(args) == 0 {
+		return nil, fmt.Errorf("command array is empty")
+	}
 
-	if (args[0] == "CONFIG") {
-		commandName := CommandName(strings.ToUpper(args[0] + " " + args[1]))
+	if strings.EqualFold(args[0], "CONFIG") {
+		commandName := CommandName(strings.ToUpper(args[0]) + " " + strings.ToUpper(args[1]))
 		command := &Command{Name: commandName, Args: args[2:]}
 		return command, nil
 	} else {
@@ -55,7 +55,7 @@ func (p *Parser) ParseCommand() (*Command, error) {
 func (p *Parser) parseArray() ([]string, error) {
 	dataType, _ := p.r.ReadByte()
 	if dataType != byte(protocol.Array) {
-		return nil, fmt.Errorf("Invalid Array")
+		return nil, fmt.Errorf("invalid array")
 	}
 
 	chunk := p.readChunk()
@@ -65,7 +65,7 @@ func (p *Parser) parseArray() ([]string, error) {
 	for i := 0; i < size; i++ {
 		arg, err := p.parseBulkString()
 		if err != nil {
-			return nil, fmt.Errorf("INVALID BULK STRING")
+			return nil, fmt.Errorf("invalid bulk string")
 		}
 		args = append(args, arg)
 	}
@@ -76,7 +76,7 @@ func (p *Parser) parseArray() ([]string, error) {
 func (p *Parser) parseBulkString() (string, error) {
 	dataType, _ := p.r.ReadByte()
 	if dataType != byte(protocol.BulkString) {
-		return "", fmt.Errorf("INVALID BULK STRING")
+		return "", fmt.Errorf("invalid bulk string")
 	}
 
 	bulkString := p.readChunk(2)
