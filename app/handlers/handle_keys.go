@@ -1,10 +1,9 @@
 package handlers
 
 import (
-	"os"
-
 	"github.com/codecrafters-io/redis-starter-go/app/config"
 	"github.com/codecrafters-io/redis-starter-go/app/protocol"
+	"github.com/codecrafters-io/redis-starter-go/app/utils"
 )
 
 func HandleKeys(config *config.Config, args []string) *protocol.RESPType {
@@ -12,12 +11,16 @@ func HandleKeys(config *config.Config, args []string) *protocol.RESPType {
 	param := args[0]
 
 	if param == "*" {
-		fileContent := readFile(config.Dir + "/" + config.DbFilename)
+		fileContent := utils.ParseFile(config.Dir + "/" + config.DbFilename)
+
+		var data []interface{}
+
+		for _, kv := range fileContent {
+			data = append(data, &protocol.RESPType{DataType: protocol.BulkString, Data: []interface{}{kv.Key}})
+		}
 		return &protocol.RESPType{
 			DataType: protocol.Array,
-			Data: []interface{}{
-				&protocol.RESPType{DataType: protocol.BulkString, Data: []interface{}{fileContent}},
-			},
+			Data:     data,
 		}
 	}
 
@@ -28,27 +31,4 @@ func HandleKeys(config *config.Config, args []string) *protocol.RESPType {
 		},
 	}
 
-}
-
-func readFile(path string) string {
-	c, _ := os.ReadFile(path)
-	key := parseTable(c)
-	str := key[4 : 4+key[3]]
-	return string(str)
-}
-
-func parseTable(bytes []byte) []byte {
-	start := sliceIndex(bytes, protocol.OpCodeResizeDB)
-	end := sliceIndex(bytes, protocol.OpCodeEOF)
-	return bytes[start+1 : end]
-}
-
-func sliceIndex(data []byte, sep byte) int {
-	for i, b := range data {
-		if b == sep {
-			return i
-		}
-	}
-
-	return -1
 }

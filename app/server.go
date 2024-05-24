@@ -21,10 +21,14 @@ type Server struct {
 }
 
 func NewServer(cfg *config.Config) *Server {
-	return &Server{
+	newServer := &Server{
 		kvStore: kvstore.NewKVStore(),
 		config:  cfg,
 	}
+
+	newServer.kvStore.WriteToCacheFromRDBFile(cfg.Dir + "/" + cfg.DbFilename)
+
+	return newServer
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
