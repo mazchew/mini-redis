@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/codecrafters-io/redis-starter-go/app/protocol"
 	"github.com/codecrafters-io/redis-starter-go/app/kvstore"
+	"github.com/codecrafters-io/redis-starter-go/app/protocol"
 )
 
 func HandleGet(kv *kvstore.KVStore, args []string) *protocol.RESPType {

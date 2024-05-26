@@ -3,15 +3,27 @@ package kvstore
 import "time"
 
 type Value struct {
-	Val interface{}
-	Ttl int64
-	SetAt int64
+	Val        interface{}
+	ExpiryTime int64
 }
 
-func NewValue(val interface{}, ttl int64) *Value {
+func NewValueWithTtl(val interface{}, ttl int64) *Value {
+	if ttl == -1 {
+		return &Value{
+			Val:        val,
+			ExpiryTime: (time.Now().UnixNano() / 1e6) + ttl,
+		}
+	} else {
+		return &Value{
+			Val:        val,
+			ExpiryTime: -1,
+		}
+	}
+}
+
+func NewValueWithExpiry(val interface{}, expiryTime int64) *Value {
 	return &Value{
-		Val: val,
-		Ttl: ttl,
-		SetAt: time.Now().UnixNano() / 1e6,
+		Val:        val,
+		ExpiryTime: expiryTime,
 	}
 }

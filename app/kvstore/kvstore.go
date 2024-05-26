@@ -24,7 +24,15 @@ func (kv *KVStore) Set(key string, value interface{}, ttl ...int64) {
 	} else {
 		ttlVal = -1
 	}
-	kv.Store[key] = NewValue(value, ttlVal)
+	kv.Store[key] = NewValueWithTtl(value, ttlVal)
+}
+
+func (kv *KVStore) SetWithExpiry(key string, value interface{}, expiryTime int64) {
+	if time.Now().UnixMilli() < expiryTime {
+		kv.Store[key] = NewValueWithExpiry(value, expiryTime)
+	} else if expiryTime == -1 {
+		kv.Store[key] = NewValueWithExpiry(value, expiryTime)
+	}
 }
 
 func (kv *KVStore) Get(key string) (*Value, error) {
@@ -32,8 +40,8 @@ func (kv *KVStore) Get(key string) (*Value, error) {
 	if !exists {
 		return nil, fmt.Errorf("key %s does not exist", key)
 	}
-	currentTime := time.Now().UnixNano() / 1e6
-	if val.Ttl > 0 && currentTime > val.SetAt+val.Ttl {
+
+	if val.ExpiryTime > 0 && time.Now().UnixMilli() > val.ExpiryTime {
 		delete(kv.Store, key)
 		return nil, fmt.Errorf("key %s has expired", key)
 	}
@@ -46,7 +54,7 @@ func (kv *KVStore) WriteToCacheFromRDBFile(filepath string) {
 	for _, cacheRecord := range data {
 		key := cacheRecord.Key
 		value := cacheRecord.Value
-		ttl := cacheRecord.Ttl
-		kv.Set(key, value, ttl)
+		expiryTime := cacheRecord.ExpiryTime
+		kv.SetWithExpiry(key, value, expiryTime)
 	}
 }

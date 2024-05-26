@@ -8,17 +8,11 @@ import (
 	"github.com/codecrafters-io/redis-starter-go/app/protocol"
 )
 
-// Constants for expiry types
-const (
-	SECONDS_EXPIRY = 0xFD
-	MS_EXPIRY      = 0xFC
-)
-
 type keyValue struct {
 	Key         string
 	Value       interface{}
 	TotalLength int
-	Ttl         int64
+	ExpiryTime  int64
 }
 
 // Function to read the RDB file and parse the key-value pairs
@@ -40,21 +34,26 @@ func ParseFile(path string) []keyValue {
 func parseKeyValue(fileData []byte, currIdx int) keyValue {
 	firstByte := fileData[currIdx]
 	var currIdxOffset int
-	var ttl int64
+	var expiryTime int64
 
-	if firstByte == SECONDS_EXPIRY {
+	if firstByte == protocol.OpCodeExpireTime {
 		expirationTime := binary.LittleEndian.Uint32(fileData[currIdx+1 : currIdx+5])
 		currIdxOffset = 5
-		ttl = int64(expirationTime * 1000) // convert to milliseconds
-	} else if firstByte == MS_EXPIRY {
+		expiryTime = int64(expirationTime * 1000) // convert to milliseconds
+	} else if firstByte == protocol.OpCodeExpireTimeMs {
 		expirationTime := binary.LittleEndian.Uint64(fileData[currIdx+1 : currIdx+9])
 		currIdxOffset = 9
-		ttl = int64(expirationTime)
+		expiryTime = int64(expirationTime)
 	}
 
 	kv := parseKeyValueInner(fileData, currIdx+currIdxOffset)
 	kv.TotalLength += currIdxOffset
-	kv.Ttl = ttl
+	if expiryTime > 0 {
+		kv.ExpiryTime = expiryTime
+	} else {
+		kv.ExpiryTime = -1
+	}
+
 	return kv
 }
 
