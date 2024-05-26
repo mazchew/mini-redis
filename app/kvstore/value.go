@@ -8,10 +8,10 @@ type Value struct {
 }
 
 func NewValueWithTtl(val interface{}, ttl int64) *Value {
-	if ttl == -1 {
+	if ttl != -1 {
 		return &Value{
 			Val:        val,
-			ExpiryTime: (time.Now().UnixNano() / 1e6) + ttl,
+			ExpiryTime: time.Now().UnixMilli() + ttl,
 		}
 	} else {
 		return &Value{
