@@ -40,7 +40,7 @@ func ExecuteCommand(kv *kvstore.KVStore, cfg *config.Config, command *Command) *
 	case CONFIG_GET:
 		return handlers.HandleConfigGet(cfg, command.Args)
 	case KEYS:
-		return handlers.HandleKeys(cfg, command.Args)
+		return handlers.HandleKeys(kv, command.Args)
 	}
 	return nil
 }

@@ -8,12 +8,12 @@ import (
 )
 
 type KVStore struct {
-	store map[string]*Value
+	Store map[string]*Value
 }
 
 func NewKVStore() *KVStore {
 	return &KVStore{
-		store: make(map[string]*Value),
+		Store: make(map[string]*Value),
 	}
 }
 
@@ -24,17 +24,17 @@ func (kv *KVStore) Set(key string, value interface{}, ttl ...int64) {
 	} else {
 		ttlVal = -1
 	}
-	kv.store[key] = NewValue(value, ttlVal)
+	kv.Store[key] = NewValue(value, ttlVal)
 }
 
 func (kv *KVStore) Get(key string) (*Value, error) {
-	val, exists := kv.store[key]
+	val, exists := kv.Store[key]
 	if !exists {
 		return nil, fmt.Errorf("key %s does not exist", key)
 	}
 	currentTime := time.Now().UnixNano() / 1e6
 	if val.Ttl > 0 && currentTime > val.SetAt+val.Ttl {
-		delete(kv.store, key)
+		delete(kv.Store, key)
 		return nil, fmt.Errorf("key %s has expired", key)
 	}
 	return val, nil
